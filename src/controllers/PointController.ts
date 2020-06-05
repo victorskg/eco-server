@@ -2,9 +2,6 @@ import knex from "../database/connection";
 import { Request, Response } from "express";
 
 class PointController {
-  readonly DEFAULT_IMAGE =
-    "https://images.unsplash.com/photo-1561385945-c99789cd12d1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60";
-
   async index(request: Request, response: Response) {
     const { city, uf, items } = request.query;
 
@@ -12,13 +9,16 @@ class PointController {
       .split(",")
       .map((i) => Number(i.trim()));
 
-    const points = await knex("point")
-      .join("point_item", "point.id", "=", "point_item.point_id")
-      .whereIn("point_item.item_id", parsedItems)
-      .where("city", String(city))
-      .where("uf", String(uf))
-      .select("point.*")
-      .distinct();
+    const points =
+      city && uf && items
+        ? await knex("point")
+            .join("point_item", "point.id", "=", "point_item.point_id")
+            .whereIn("point_item.item_id", parsedItems)
+            .where("city", String(city))
+            .where("uf", String(uf))
+            .select("point.*")
+            .distinct()
+        : await knex("point").select("*");
 
     return response.json(points);
   }
@@ -32,7 +32,8 @@ class PointController {
 
     const ids = await trx("point").insert({
       ...pointWithoutItems,
-      image: this.DEFAULT_IMAGE,
+      image:
+        "https://images.unsplash.com/photo-1561385945-c99789cd12d1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
     });
 
     const pointItems = items.map((item_id: number) => {
