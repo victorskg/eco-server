@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 
 class PointController {
   async index(request: Request, response: Response) {
-    const { city, uf, items } = request.query;
+    const { city, uf, items, app } = request.query;
 
     const parsedItems = String(items)
       .split(",")
@@ -20,25 +20,30 @@ class PointController {
             .distinct()
         : await knex("point").select("*");
 
-    return response.json(points);
+    const serializedPoints = points.map((point) => ({
+      ...point,
+      image: `http://192.168.0.121:3333/uploads/points/${point.image}`,
+    }));
+
+    return response.json(serializedPoints);
   }
 
   async create(request: Request, response: Response) {
     const items = request.body.items;
-    const pointWithoutItems = request.body;
-    delete pointWithoutItems.items;
+    const point = request.body;
+    delete point.items;
+    delete point.file;
 
     const trx = await knex.transaction();
 
     const ids = await trx("point").insert({
-      ...pointWithoutItems,
-      image:
-        "https://images.unsplash.com/photo-1561385945-c99789cd12d1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
+      ...point,
+      image: request.file.filename,
     });
 
-    const pointItems = items.map((item_id: number) => {
+    const pointItems = items.split(",").map((item_id: string) => {
       return {
-        item_id,
+        item_id: Number(item_id.trim()),
         point_id: ids[0],
       };
     });
@@ -61,13 +66,18 @@ class PointController {
       });
     }
 
+    const serializedPoint = {
+      ...point,
+      image: `http://192.168.0.121:3333/uploads/points/${point.image}`,
+    };
+
     const items = await knex("item")
       .join("point_item", "item.id", "=", "point_item.item_id")
       .where("point_item.point_id", point.id)
       .select("item.title", "item.id");
 
     return response.json({
-      ...point,
+      ...serializedPoint,
       items,
     });
   }
