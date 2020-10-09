@@ -16,12 +16,12 @@ This repository is my first contact with JavaScript on the back end, i have alwa
 # :rocket: Features
 The serve provides some API's to be consumed by the [web](https://github.com/victorskg/eco-web) and [mobile](https://github.com/victorskg/eco-app) layer. That's API's are described bellow:
 
-* **GET** `/items` Find all collect items
-* **GET** `/points` Find all collect points
-  - `QueryParams` city, uf and items. If none are specified, return all points. Usage example: `/points?city=Fortaleza&uf=CE&items=1,2,3`
-* **GET** `/points:id` Find point by id
-* **POST** `/points` Create a point. Post a form data with the attributes of a point
-* **GET** `/uploads` Endpoint to provide static image files
+* **GET** */items* Find all collect items
+* **GET** *points* Find all collect points
+  - *QueryParams* city, uf and items. If none are specified, return all points. Usage example: */points?city=Fortaleza&uf=CE&items=1,2,3*
+* **GET** */points:id* Find point by id
+* **POST** */points* Create a point. Post a form data with the attributes of a point
+* **GET** */uploads* Endpoint to provide static image files
 
 # :runner: Getting Started
 To run this server, install node and inside the server directory, do:
